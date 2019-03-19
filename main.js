@@ -36,6 +36,7 @@ const userSchema=new mongoose.Schema({
 		required:true
 	}
 });
+
 const Product=mongoose.model("Product",productSchema,"products");
 const User=mongoose.model("User",productSchema,"users");
 
@@ -164,6 +165,7 @@ routerProducts.put("/:id/:code/:name/:prize",(req,res)=>{
 
 routerUsers.post("/",(req,res)=>{
 	let user=req.body;
+	user.password=crypt(user.password);
 	User.create(user).then(data=>{
 		console.log(data);
 		res.status(200);
@@ -259,7 +261,7 @@ routerUsers.put("/:id/:firstName/:lastName/:email/:password",(req,res)=>{
 				firstName:firstName,
 				lastName:lastName,
 				email:email,
-				password:password
+				password:crypt(password)
 			}
 		}
 	).then(data=>{
@@ -288,7 +290,7 @@ routerLogin.post("/",(req,res)=>{
 	User.findOne(
 		{
 			email:email,
-			password:password
+			password:crypt(password)
 		}
 	).then(data=>{
 		console.log(data);
@@ -311,6 +313,19 @@ routerLogin.post("/",(req,res)=>{
 		});
 	});
 });
+
+function crypt(string){
+	var mykey = crypto.createCipher('aes-128-cbc', 'password_encryption');
+	var mystr = mykey.update(string, 'utf8', 'hex')
+	mystr += mykey.update.final('hex');
+	return mystr;
+}
+function decrypt(string){
+	var mykey = crypto.createDecipher('aes-128-cbc', 'password_encryption');
+	var mystr = mykey.update(string, 'hex', 'utf8')
+	mystr += mykey.update.final('utf8');
+	return mystr;
+}
 
 
 const app=express();
